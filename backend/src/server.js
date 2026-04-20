@@ -5,6 +5,7 @@ require('dotenv').config()
 const authRoutes = require('./routes/authRoutes')
 const courseRoutes = require('./routes/courseRoutes')
 const taskRoutes = require('./routes/taskRoutes')
+const notificationRoutes = require('./routes/notificationRoutes')
 
 const app = express()
 
@@ -14,6 +15,7 @@ app.use(express.json())
 app.use('/api/auth', authRoutes)
 app.use('/api/courses', courseRoutes)
 app.use('/api/tasks', taskRoutes)
+app.use('/api/notifications', notificationRoutes)
 
 app.get('/', (req, res) => {
   res.send('PrioritEase server is running')
