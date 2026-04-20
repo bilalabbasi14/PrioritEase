@@ -8,6 +8,7 @@ const Login = () => {
 
   const handleSuccess = async (credentialResponse) => {
     try {
+      console.log('Google ID Token:', credentialResponse.credential) // For debugging remove in production
       await loginWithGoogle(credentialResponse.credential)
       navigate('/dashboard')
     } catch (err) {
