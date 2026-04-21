@@ -1,5 +1,6 @@
 const { google } = require('googleapis')
 const db = require('../config/db')
+const { classroomDueUtcToPakistanDatetime } = require('./timeService')
 
 /**
  * Build an authenticated OAuth2 client for a given user.
@@ -203,13 +204,7 @@ const syncAssignments = async (userId) => {
 
     for (const work of courseWork) {
       // Parse Google's dueDate + dueTime into a MySQL DATETIME
-      let deadline = null
-      if (work.dueDate) {
-        const { year, month, day } = work.dueDate
-        const hour   = work.dueTime?.hours   ?? 23
-        const minute = work.dueTime?.minutes ?? 59
-        deadline = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00`
-      }
+      const deadline = classroomDueUtcToPakistanDatetime(work.dueDate, work.dueTime)
 
       const status = mapSubmissionStatus(submissionStates[work.id])
 

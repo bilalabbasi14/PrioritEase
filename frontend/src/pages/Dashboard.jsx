@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from '../api/axios'
 import useAuth from '../hooks/useAuth'
+import { formatDateInPakistan, getPakistanCalendarDayDiff, parsePakistanDatetime } from '../utils/time'
 
 const PRIORITY_COLOR = {
   high:   { bg: 'rgba(220,38,38,0.12)',   text: '#f87171', border: 'rgba(220,38,38,0.25)' },
@@ -99,13 +100,17 @@ const Dashboard = () => {
 
   const formatDeadline = (dl) => {
     if (!dl) return null
-    const d = new Date(dl)
+    const d = parsePakistanDatetime(dl)
+    if (!d) return null
     const now = new Date()
-    const diff = Math.ceil((d - now) / (1000 * 60 * 60 * 24))
-    if (diff < 0)  return { text: 'Overdue',       color: '#f87171' }
-    if (diff === 0) return { text: 'Due today',     color: '#fb923c' }
-    if (diff === 1) return { text: 'Due tomorrow',  color: '#facc15' }
-    return { text: `Due in ${diff}d`, color: 'rgba(167,139,250,0.5)' }
+
+    if (d < now) return { text: 'Overdue', color: '#f87171' }
+
+    const dayDiff = getPakistanCalendarDayDiff(d, now)
+    if (dayDiff == null) return null
+    if (dayDiff === 0) return { text: 'Due today', color: '#fb923c' }
+    if (dayDiff === 1) return { text: 'Due tomorrow', color: '#facc15' }
+    return { text: `Due in ${dayDiff}d`, color: 'rgba(167,139,250,0.5)' }
   }
 
   const visibleTasks = showAll ? tasks : tasks.slice(0, 5)
@@ -196,7 +201,7 @@ const Dashboard = () => {
               Hey, {firstName} 
             </h1>
             <p style={{ fontSize: '14px', color: 'rgba(167,139,250,0.5)' }}>
-              {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+              {formatDateInPakistan(new Date(), { weekday: 'long', month: 'long', day: 'numeric' })}
             </p>
           </div>
 

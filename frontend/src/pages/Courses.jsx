@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from '../api/axios'
+import { formatDateInPakistan } from '../utils/time'
 
 const COLORS = [
   '#7c3aed','#2563eb','#059669','#d97706',
@@ -338,7 +339,7 @@ const Courses = () => {
                       </div>
                       {t.deadline && (
                         <span style={{ fontSize:'12px', color:'rgba(167,139,250,0.4)', whiteSpace:'nowrap', flexShrink:0 }}>
-                          {new Date(t.deadline).toLocaleDateString('en-US',{month:'short',day:'numeric'})}
+                          {formatDateInPakistan(t.deadline, { month: 'short', day: 'numeric' })}
                         </span>
                       )}
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(167,139,250,0.3)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>

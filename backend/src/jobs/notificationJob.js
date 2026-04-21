@@ -49,6 +49,19 @@ const recalculatePriorities = async () => {
 
 const markOverdueTasks = async () => {
   try {
+    const nowInPakistanSql = "DATE_ADD(UTC_TIMESTAMP(), INTERVAL 5 HOUR)"
+
+    // Recover tasks that were incorrectly marked overdue earlier.
+    await db.query(
+      `UPDATE tasks t
+       LEFT JOIN courses c ON c.id = t.course_id
+       SET t.status = 'pending'
+       WHERE t.status = 'overdue'
+         AND t.deadline IS NOT NULL
+         AND t.deadline >= ${nowInPakistanSql}
+         AND (t.course_id IS NULL OR c.is_archived = FALSE)`
+    )
+
     // Fetch the affected tasks BEFORE updating so we have user_id + title
     const [overdueTasks] = await db.query(
       `SELECT t.id, t.user_id, t.title
@@ -56,7 +69,7 @@ const markOverdueTasks = async () => {
        LEFT JOIN courses c ON c.id = t.course_id
        WHERE t.status = 'pending'
          AND t.deadline IS NOT NULL
-         AND t.deadline < NOW()
+         AND t.deadline < ${nowInPakistanSql}
          AND (t.course_id IS NULL OR c.is_archived = FALSE)`
     )
 

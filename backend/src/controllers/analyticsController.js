@@ -66,6 +66,8 @@ exports.getUpcomingDeadlines = async (req, res) => {
   const days = parseInt(req.query.days) || 7
 
   try {
+    const nowInPakistanSql = "DATE_ADD(UTC_TIMESTAMP(), INTERVAL 5 HOUR)"
+
     const [rows] = await db.query(
       `SELECT
          t.id, t.title, t.deadline, t.deadline_priority, t.user_priority,
@@ -75,7 +77,7 @@ exports.getUpcomingDeadlines = async (req, res) => {
        WHERE t.user_id = ?
          AND t.status = 'pending'
          AND t.deadline IS NOT NULL
-         AND t.deadline BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL ? DAY)
+         AND t.deadline BETWEEN ${nowInPakistanSql} AND DATE_ADD(${nowInPakistanSql}, INTERVAL ? DAY)
          AND (t.course_id IS NULL OR c.is_archived = FALSE)
        ORDER BY t.deadline ASC`,
       [req.user.id, days]
