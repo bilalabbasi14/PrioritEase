@@ -3,14 +3,18 @@ const db = require('../config/db')
 const { calculateDeadlinePriority } = require('../services/priorityService')
 
 exports.getTasks = async (req, res) => {
+  const { course_id } = req.query
+
   try {
     const [rows] = await db.query(
       `SELECT tasks.*, courses.name as course_name, courses.color as course_color
        FROM tasks
        LEFT JOIN courses ON tasks.course_id = courses.id
        WHERE tasks.user_id = ? AND tasks.is_archived = FALSE
+         AND (tasks.course_id IS NULL OR courses.is_archived = FALSE)
+         ${course_id ? 'AND tasks.course_id = ?' : ''}
        ORDER BY tasks.deadline ASC`,
-      [req.user.id]
+      course_id ? [req.user.id, course_id] : [req.user.id]
     )
     return res.status(200).json(rows)
   } catch (err) {
@@ -25,7 +29,8 @@ exports.getTaskById = async (req, res) => {
       `SELECT tasks.*, courses.name as course_name, courses.color as course_color
        FROM tasks
        LEFT JOIN courses ON tasks.course_id = courses.id
-       WHERE tasks.id = ? AND tasks.user_id = ?`,
+       WHERE tasks.id = ? AND tasks.user_id = ?
+         AND (tasks.course_id IS NULL OR courses.is_archived = FALSE)`,
       [id, req.user.id]
     )
     if (rows.length === 0)

@@ -13,8 +13,10 @@ exports.getSummary = async (req, res) => {
          SUM(status = 'overdue')                          AS overdue,
          SUM(status = 'pending')                          AS pending,
          ROUND(SUM(status = 'completed') / COUNT(*) * 100, 1) AS completion_rate
-       FROM tasks
-       WHERE user_id = ?`,
+       FROM tasks t
+       LEFT JOIN courses c ON c.id = t.course_id
+       WHERE t.user_id = ?
+         AND (t.course_id IS NULL OR c.is_archived = FALSE)`,
       [req.user.id]
     )
 
@@ -43,7 +45,7 @@ exports.getTasksPerCourse = async (req, res) => {
        FROM courses c
        LEFT JOIN tasks t
          ON t.course_id = c.id AND t.user_id = ?
-       WHERE c.user_id = ?
+       WHERE c.user_id = ? AND c.is_archived = FALSE
        GROUP BY c.id
        ORDER BY total DESC`,
       [req.user.id, req.user.id]
@@ -74,6 +76,7 @@ exports.getUpcomingDeadlines = async (req, res) => {
          AND t.status = 'pending'
          AND t.deadline IS NOT NULL
          AND t.deadline BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL ? DAY)
+         AND (t.course_id IS NULL OR c.is_archived = FALSE)
        ORDER BY t.deadline ASC`,
       [req.user.id, days]
     )
@@ -99,10 +102,12 @@ exports.getCompletionTrend = async (req, res) => {
          YEARWEEK(created_at, 1)   AS week,
          MIN(DATE(created_at))     AS week_start,
          COUNT(*)                  AS completed
-       FROM tasks
-       WHERE user_id = ?
+       FROM tasks t
+       LEFT JOIN courses c ON c.id = t.course_id
+       WHERE t.user_id = ?
          AND status = 'completed'
          AND created_at >= DATE_SUB(NOW(), INTERVAL ? WEEK)
+         AND (t.course_id IS NULL OR c.is_archived = FALSE)
        GROUP BY YEARWEEK(created_at, 1)
        ORDER BY week ASC`,
       [req.user.id, weeks]

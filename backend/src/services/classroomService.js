@@ -129,6 +129,12 @@ const fetchSubmissionStates = async (userId, courseId) => {
  * Returns { created, updated } counts.
  */
 const syncCourses = async (userId) => {
+  const COLORS = [
+    '#7c3aed', '#2563eb', '#059669', '#d97706',
+    '#dc2626', '#db2777', '#0891b2', '#65a30d',
+    '#9333ea', '#ea580c', '#0284c7', '#16a34a',
+  ]
+
   const classroomCourses = await fetchClassroomCourses(userId)
 
   let created = 0
@@ -152,10 +158,11 @@ const syncCourses = async (userId) => {
       )
       updated++
     } else {
+      const color = COLORS[created % COLORS.length]
       await db.query(
-        `INSERT INTO courses (user_id, name, google_course_id)
-         VALUES (?, ?, ?)`,
-        [userId, course.name, course.id]
+        `INSERT INTO courses (user_id, name, google_course_id, color)
+         VALUES (?, ?, ?, ?)`,
+        [userId, course.name, course.id, color]
       )
       created++
     }

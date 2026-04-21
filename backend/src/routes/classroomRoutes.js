@@ -2,6 +2,7 @@ const express = require('express')
 const router  = express.Router()
 const authMiddleware = require('../middleware/authMiddleware')
 const { syncAll, syncCourses, syncAssignments, fetchClassroomCourses } = require('../services/classroomService')
+const { recalculatePriorities, markOverdueTasks } = require('../jobs/notificationJob')
 
 router.use(authMiddleware)
 
@@ -23,6 +24,11 @@ router.get('/courses', async (req, res) => {
 router.post('/sync', async (req, res) => {
   try {
     const result = await syncAll(req.user.id)
+    
+    // Immediately recalculate after sync
+    await recalculatePriorities()
+    await markOverdueTasks()
+    
     res.json(result)
   } catch (err) {
     if (err.message.includes('re-authenticate')) {

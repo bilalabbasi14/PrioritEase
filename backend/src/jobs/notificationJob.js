@@ -8,9 +8,12 @@ const { sendToUser } = require('../services/pushService')
 const recalculatePriorities = async () => {
   try {
     const [tasks] = await db.query(
-      `SELECT id, user_id, title, deadline, deadline_priority
-       FROM tasks
-       WHERE status = 'pending' AND deadline IS NOT NULL`
+      `SELECT t.id, t.user_id, t.title, t.deadline, t.deadline_priority
+       FROM tasks t
+       LEFT JOIN courses c ON c.id = t.course_id
+       WHERE t.status = 'pending'
+         AND t.deadline IS NOT NULL
+         AND (t.course_id IS NULL OR c.is_archived = FALSE)`
     )
 
     const escalated = [] // tasks that just jumped to 'high'
@@ -48,11 +51,13 @@ const markOverdueTasks = async () => {
   try {
     // Fetch the affected tasks BEFORE updating so we have user_id + title
     const [overdueTasks] = await db.query(
-      `SELECT id, user_id, title
-       FROM tasks
-       WHERE status = 'pending'
-         AND deadline IS NOT NULL
-         AND deadline < NOW()`
+      `SELECT t.id, t.user_id, t.title
+       FROM tasks t
+       LEFT JOIN courses c ON c.id = t.course_id
+       WHERE t.status = 'pending'
+         AND t.deadline IS NOT NULL
+         AND t.deadline < NOW()
+         AND (t.course_id IS NULL OR c.is_archived = FALSE)`
     )
 
     if (!overdueTasks.length) {
