@@ -2,6 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import useAuth from '../hooks/useAuth'
 import axios from '../api/axios'
+import AmbientBackground from './AmbientBackground'
 
 const NAV_ITEMS = [
   {
@@ -100,6 +101,63 @@ const Layout = ({ children }) => {
           background: #0a0a0f;
           font-family: 'DM Sans', sans-serif;
           color: #e9d5ff;
+          position: relative;
+          isolation: isolate;
+        }
+
+        .ambient-bg-layer {
+          position: fixed;
+          inset: 0;
+          pointer-events: none;
+          z-index: 0;
+          overflow: hidden;
+        }
+
+        .ambient-canvas {
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+        }
+
+        .ambient-blob {
+          position: absolute;
+          border-radius: 50%;
+          filter: blur(88px);
+          pointer-events: none;
+          animation: ambientDrift 13s ease-in-out infinite alternate;
+        }
+
+        .ambient-blob-1 {
+          width: 460px;
+          height: 460px;
+          background: rgba(109, 40, 217, 0.16);
+          top: -130px;
+          left: -90px;
+          animation-delay: 0s;
+        }
+
+        .ambient-blob-2 {
+          width: 320px;
+          height: 320px;
+          background: rgba(76, 29, 149, 0.2);
+          bottom: -80px;
+          right: -70px;
+          animation-delay: -4s;
+        }
+
+        .ambient-blob-3 {
+          width: 230px;
+          height: 230px;
+          background: rgba(139, 92, 246, 0.1);
+          top: 48%;
+          left: 52%;
+          transform: translate(-50%, -50%);
+          animation-delay: -8s;
+        }
+
+        @keyframes ambientDrift {
+          0% { transform: translate(0, 0) scale(1); }
+          100% { transform: translate(26px, 18px) scale(1.08); }
         }
 
         /* ── Sidebar (desktop) ── */
@@ -342,6 +400,8 @@ const Layout = ({ children }) => {
           min-height: 100vh;
           padding: 32px;
           transition: margin-left 0.22s ease;
+          position: relative;
+          z-index: 1;
         }
 
         .layout-root.sidebar-collapsed .main-content {
@@ -411,6 +471,7 @@ const Layout = ({ children }) => {
       `}</style>
 
       <div className={`layout-root${sidebarCollapsed ? ' sidebar-collapsed' : ''}`}>
+        <AmbientBackground />
 
         {/* ── Desktop Sidebar ── */}
         <aside className="sidebar">
