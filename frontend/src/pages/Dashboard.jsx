@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import axios from '../api/axios'
 import useAuth from '../hooks/useAuth'
 import { formatDateInPakistan, getPakistanCalendarDayDiff, parsePakistanDatetime } from '../utils/time'
+import TaskDetailPanel from '../components/TaskDetailPanel'
 
 const PRIORITY_COLOR = {
   high:   { bg: 'rgba(220,38,38,0.12)',   text: '#f87171', border: 'rgba(220,38,38,0.25)' },
@@ -50,18 +51,22 @@ const Dashboard = () => {
 
   const [summary, setSummary]     = useState(null)
   const [tasks, setTasks]         = useState([])
+  const [courses, setCourses]     = useState([])
   const [showAll, setShowAll]     = useState(false)
+  const [selectedTaskId, setSelectedTaskId] = useState(null)
   const [syncing, setSyncing]     = useState(false)
   const [syncMsg, setSyncMsg]     = useState('')
   const [loading, setLoading]     = useState(true)
 
   const fetchData = async () => {
     try {
-      const [sumRes, taskRes] = await Promise.all([
+      const [sumRes, taskRes, coursesRes] = await Promise.all([
         axios.get('/analytics/summary'),
         axios.get('/tasks'),
+        axios.get('/courses'),
       ])
       setSummary(sumRes.data)
+      setCourses(coursesRes.data)
 
       // Sort by combined priority score: deadline_priority + user_priority
       const SCORE = { high: 3, medium: 2, low: 1 }
@@ -263,7 +268,7 @@ const Dashboard = () => {
               {visibleTasks.map((task, i) => {
                 const dl = formatDeadline(task.deadline)
                 return (
-                  <div key={task.id} className="task-row" onClick={() => navigate(`/task/${task.id}`)}
+                  <div key={task.id} className="task-row" onClick={() => setSelectedTaskId(task.id)}
                     style={{ animationDelay: `${0.1 + i * 0.04}s` }}>
                     {/* Course color dot */}
                     <div className="course-dot" style={{ background: task.color || '#6366f1' }} />
@@ -318,6 +323,15 @@ const Dashboard = () => {
         </div>
 
       </div>
+
+      {selectedTaskId && (
+        <TaskDetailPanel
+          taskId={selectedTaskId}
+          courses={courses}
+          onClose={() => setSelectedTaskId(null)}
+          onUpdate={fetchData}
+        />
+      )}
     </>
   )
 }

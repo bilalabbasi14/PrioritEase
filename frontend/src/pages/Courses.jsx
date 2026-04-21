@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import axios from '../api/axios'
 import { formatDateInPakistan } from '../utils/time'
+import TaskDetailPanel from '../components/TaskDetailPanel'
 
 const COLORS = [
   '#7c3aed','#2563eb','#059669','#d97706',
@@ -107,10 +107,10 @@ const Modal = ({ onClose, onSave, initial }) => {
 }
 
 const Courses = () => {
-  const navigate = useNavigate()
   const [courses, setCourses]           = useState([])
   const [selected, setSelected]         = useState(null)
   const [tasks, setTasks]               = useState([])
+  const [selectedTaskId, setSelectedTaskId] = useState(null)
   const [loadingTasks, setLoadingTasks] = useState(false)
   const [loading, setLoading]           = useState(true)
   const [modal, setModal]               = useState(null) // null | 'add' | course obj
@@ -137,6 +137,11 @@ const Courses = () => {
       setTasks(res.data)
     } catch { setTasks([]) }
     finally { setLoadingTasks(false) }
+  }
+
+  const refreshSelectedCourseTasks = async () => {
+    if (!selected) return
+    await openCourse(selected)
   }
 
   const handleSave = async (data) => {
@@ -324,7 +329,7 @@ const Courses = () => {
                   {sortedTasks.length} task{sortedTasks.length !== 1 ? 's' : ''}
                 </p>
                 {sortedTasks.map(t => (
-                  <div key={t.id} className="task-item" onClick={() => navigate(`/task/${t.id}`)}>
+                  <div key={t.id} className="task-item" onClick={() => setSelectedTaskId(t.id)}>
                     <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
                       <div style={{ flex:1, minWidth:0 }}>
                         <p style={{ fontSize:'14px', color:'#e9d5ff', marginBottom:'4px',
@@ -358,6 +363,15 @@ const Courses = () => {
           onClose={() => setModal(null)}
           onSave={handleSave}
           initial={modal === 'add' ? null : modal}
+        />
+      )}
+
+      {selectedTaskId && (
+        <TaskDetailPanel
+          taskId={selectedTaskId}
+          courses={courses}
+          onClose={() => setSelectedTaskId(null)}
+          onUpdate={refreshSelectedCourseTasks}
         />
       )}
 
