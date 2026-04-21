@@ -136,13 +136,18 @@ const syncCourses = async (userId) => {
 
   for (const course of classroomCourses) {
     const [existing] = await db.query(
-      'SELECT id FROM courses WHERE user_id = ? AND google_course_id = ?',
+      'SELECT id, is_archived FROM courses WHERE user_id = ? AND google_course_id = ?',
       [userId, course.id]
     )
 
     if (existing.length > 0) {
+      // Skip updating if course is archived — never un-archive during sync
+      if (existing[0].is_archived) {
+        continue
+      }
+      
       await db.query(
-        'UPDATE courses SET name = ? WHERE user_id = ? AND google_course_id = ?',
+        'UPDATE courses SET name = ? WHERE user_id = ? AND google_course_id = ? AND is_archived = FALSE',
         [course.name, userId, course.id]
       )
       updated++
@@ -170,7 +175,7 @@ const syncCourses = async (userId) => {
  */
 const syncAssignments = async (userId) => {
   const [courses] = await db.query(
-    'SELECT id, google_course_id FROM courses WHERE user_id = ? AND google_course_id IS NOT NULL',
+    'SELECT id, google_course_id FROM courses WHERE user_id = ? AND google_course_id IS NOT NULL AND is_archived = FALSE',
     [userId]
   )
 

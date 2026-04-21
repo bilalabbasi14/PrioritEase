@@ -8,7 +8,7 @@ exports.getTasks = async (req, res) => {
       `SELECT tasks.*, courses.name as course_name, courses.color as course_color
        FROM tasks
        LEFT JOIN courses ON tasks.course_id = courses.id
-       WHERE tasks.user_id = ?
+       WHERE tasks.user_id = ? AND tasks.is_archived = FALSE
        ORDER BY tasks.deadline ASC`,
       [req.user.id]
     )
@@ -118,6 +118,25 @@ exports.deleteTask = async (req, res) => {
 
     await db.query('DELETE FROM tasks WHERE id = ?', [id])
     return res.status(200).json({ message: 'Task deleted' })
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error', error: err.message })
+  }
+}
+
+exports.archiveTask = async (req, res) => {
+  const { id } = req.params
+
+  try {
+    const [rows] = await db.query(
+      'SELECT * FROM tasks WHERE id = ? AND user_id = ?',
+      [id, req.user.id]
+    )
+    if (rows.length === 0)
+      return res.status(404).json({ message: 'Task not found' })
+
+    await db.query('UPDATE tasks SET is_archived = TRUE WHERE id = ?', [id])
+    const [updated] = await db.query('SELECT * FROM tasks WHERE id = ?', [id])
+    return res.status(200).json(updated[0])
   } catch (err) {
     return res.status(500).json({ message: 'Server error', error: err.message })
   }

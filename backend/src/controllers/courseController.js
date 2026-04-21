@@ -3,7 +3,7 @@ const db = require('../config/db')
 exports.getCourses = async (req, res) => {
   try {
     const [rows] = await db.query(
-      'SELECT * FROM courses WHERE user_id = ? ORDER BY created_at DESC',
+      'SELECT * FROM courses WHERE user_id = ? AND is_archived = FALSE ORDER BY created_at DESC',
       [req.user.id]
     )
     return res.status(200).json(rows)
@@ -64,6 +64,25 @@ exports.deleteCourse = async (req, res) => {
 
     await db.query('DELETE FROM courses WHERE id = ?', [id])
     return res.status(200).json({ message: 'Course deleted' })
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error', error: err.message })
+  }
+}
+
+exports.archiveCourse = async (req, res) => {
+  const { id } = req.params
+
+  try {
+    const [rows] = await db.query(
+      'SELECT * FROM courses WHERE id = ? AND user_id = ?',
+      [id, req.user.id]
+    )
+    if (rows.length === 0)
+      return res.status(404).json({ message: 'Course not found' })
+
+    await db.query('UPDATE courses SET is_archived = TRUE WHERE id = ?', [id])
+    const [updated] = await db.query('SELECT * FROM courses WHERE id = ?', [id])
+    return res.status(200).json(updated[0])
   } catch (err) {
     return res.status(500).json({ message: 'Server error', error: err.message })
   }
