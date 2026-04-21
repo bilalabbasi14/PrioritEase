@@ -3,9 +3,12 @@ import { GoogleOAuthProvider } from '@react-oauth/google'
 import { AuthProvider } from './context/AuthContext'
 import useAuth from './hooks/useAuth'
 
+import Layout from './components/Layout'
+
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Courses from './pages/Courses'
+import Tasks from './pages/Tasks'
 import TaskDetail from './pages/TaskDetail'
 import Calendar from './pages/Calendar'
 import Notifications from './pages/Notifications'
@@ -14,7 +17,7 @@ import Settings from './pages/Settings'
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth()
   if (loading) return <div className="p-4">Loading...</div>
-  return user ? children : <Navigate to="/login" />
+  return user ? <Layout>{children}</Layout> : <Navigate to="/login" />
 }
 
 const AppRoutes = () => {
@@ -26,6 +29,7 @@ const AppRoutes = () => {
       <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/courses" element={<ProtectedRoute><Courses /></ProtectedRoute>} />
+      <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
       <Route path="/task/:id" element={<ProtectedRoute><TaskDetail /></ProtectedRoute>} />
       <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
       <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />

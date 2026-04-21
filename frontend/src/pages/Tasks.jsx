@@ -1,4 +1,4 @@
-const Notifications = () => {
+const Tasks = () => {
   return (
     <div className="page-enter">
       {/* page content */}
@@ -6,4 +6,4 @@ const Notifications = () => {
   )
 }
 
-export default Notifications
+export default Tasks

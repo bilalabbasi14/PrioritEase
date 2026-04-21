@@ -1,5 +1,9 @@
 const TaskDetail = () => {
-  return <div className="p-4">Page coming soon</div>
+  return (
+    <div className="page-enter">
+      {/* page content */}
+    </div>
+  )
 }
 
 export default TaskDetail
