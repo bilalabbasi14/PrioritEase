@@ -19,8 +19,8 @@ export const AuthProvider = ({ children }) => {
     }
   }, [])
 
-  const loginWithGoogle = async (id_token) => {
-    const res = await axios.post('/auth/google', { id_token })
+  const loginWithGoogle = async (code) => {
+    const res = await axios.post('/auth/google', { code })
     localStorage.setItem('token', res.data.token)
     setUser(res.data)
   }

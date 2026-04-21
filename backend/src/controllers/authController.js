@@ -3,7 +3,11 @@ const jwt = require('jsonwebtoken')
 const { OAuth2Client } = require('google-auth-library')
 require('dotenv').config()
 
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
+const client = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  'postmessage' // required for auth-code flow from browser
+)
 
 const generateToken = (user) => {
   return jwt.sign(
@@ -14,12 +18,17 @@ const generateToken = (user) => {
 }
 
 exports.googleLogin = async (req, res) => {
-  const { id_token } = req.body
+  const { code } = req.body
 
-  if (!id_token)
-    return res.status(400).json({ message: 'Google token is required' })
+  if (!code)
+    return res.status(400).json({ message: 'Authorization code is required' })
 
   try {
+    // Exchange auth code for tokens
+    const { tokens } = await client.getToken(code)
+    const { access_token, refresh_token, id_token } = tokens
+
+    // Verify the id_token to get user info
     const ticket = await client.verifyIdToken({
       idToken: id_token,
       audience: process.env.GOOGLE_CLIENT_ID,
@@ -38,13 +47,17 @@ exports.googleLogin = async (req, res) => {
     if (rows.length > 0) {
       user = rows[0]
       await db.query(
-        'UPDATE users SET name = ?, email = ? WHERE google_id = ?',
-        [name, email, google_id]
+        `UPDATE users
+         SET name = ?, email = ?, google_access_token = ?,
+             google_refresh_token = COALESCE(?, google_refresh_token)
+         WHERE google_id = ?`,
+        [name, email, access_token, refresh_token ?? null, google_id]
       )
     } else {
       const [result] = await db.query(
-        'INSERT INTO users (name, email, google_id) VALUES (?, ?, ?)',
-        [name, email, google_id]
+        `INSERT INTO users (name, email, google_id, google_access_token, google_refresh_token)
+         VALUES (?, ?, ?, ?, ?)`,
+        [name, email, google_id, access_token, refresh_token ?? null]
       )
       user = { id: result.insertId, email }
     }
@@ -56,7 +69,7 @@ exports.googleLogin = async (req, res) => {
       picture,
     })
   } catch (err) {
-    return res.status(401).json({ message: 'Invalid Google token', error: err.message })
+    return res.status(401).json({ message: 'Google auth failed', error: err.message })
   }
 }
 
