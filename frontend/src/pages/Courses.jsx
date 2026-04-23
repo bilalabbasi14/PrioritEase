@@ -211,15 +211,27 @@ const Courses = () => {
         .add-btn:hover { background:rgba(139,92,246,0.25); transform:translateY(-1px); }
         .confirm-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:100;
           display:flex; align-items:center; justifyContent:center; backdropFilter:'blur(4px)' }
+        @media (max-width: 900px) {
+          .courses-shell { flex-direction: column; gap: 16px; max-width: 100%; width: 100%; overflow-x: hidden; }
+          .courses-list-col { flex: 1 1 auto !important; }
+          .courses-detail-col { width: 100%; }
+          .courses-header { flex-wrap: wrap; gap: 10px; }
+          .courses-grid { grid-template-columns: 1fr !important; }
+          .course-task-row { flex-wrap: wrap; align-items: flex-start; }
+          .course-task-main { width: 100%; }
+          .course-task-meta { width: 100%; display: flex; flex-wrap: wrap; gap: 6px; }
+          .course-task-date { font-size: 11px !important; }
+          .course-task-chevron { display: none; }
+        }
       `}</style>
 
-      <div style={{ fontFamily:'DM Sans,sans-serif', color:'#e9d5ff', display:'flex', gap:'24px', maxWidth:'1000px' }}>
+      <div className="courses-shell" style={{ fontFamily:'DM Sans,sans-serif', color:'#e9d5ff', display:'flex', gap:'24px', maxWidth:'1000px' }}>
 
         {/* ── Left: course list ── */}
-        <div style={{ flex: selected ? '0 0 320px' : '1', minWidth:0, animation:'fadeUp 0.45s cubic-bezier(0.16,1,0.3,1) both' }}>
+        <div className="courses-list-col" style={{ flex: selected ? '0 0 320px' : '1', minWidth:0, animation:'fadeUp 0.45s cubic-bezier(0.16,1,0.3,1) both' }}>
 
           {/* Header */}
-          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'20px' }}>
+          <div className="courses-header" style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'20px' }}>
             <h1 style={{ fontFamily:'Poppins,sans-serif', fontSize:'22px', fontWeight:600, color:'#e9d5ff' }}>Courses</h1>
             <button className="add-btn" onClick={() => setModal('add')}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -234,7 +246,7 @@ const Courses = () => {
               <p style={{ color:'rgba(167,139,250,0.4)', fontSize:'14px' }}>No courses yet. Add one or sync Classroom.</p>
             </div>
           ) : (
-            <div style={{ display:'grid', gridTemplateColumns: selected ? '1fr' : 'repeat(auto-fill,minmax(220px,1fr))', gap:'12px' }}>
+            <div className="courses-grid" style={{ display:'grid', gridTemplateColumns: selected ? '1fr' : 'repeat(auto-fill,minmax(220px,1fr))', gap:'12px' }}>
               {courses.map((c, i) => (
                 <div key={c.id} className={`course-card${selected?.id === c.id ? ' active' : ''}`}
                   onClick={() => selected?.id === c.id ? setSelected(null) : openCourse(c)}
@@ -299,7 +311,7 @@ const Courses = () => {
 
         {/* ── Right: course detail ── */}
         {selected && (
-          <div style={{ flex:1, minWidth:0, animation:'slideIn 0.35s cubic-bezier(0.16,1,0.3,1) both' }}>
+          <div className="courses-detail-col" style={{ flex:1, minWidth:0, animation:'slideIn 0.35s cubic-bezier(0.16,1,0.3,1) both' }}>
             {/* Detail header */}
             <div style={{ display:'flex', alignItems:'center', gap:'12px', marginBottom:'20px' }}>
               <div style={{ width:6, height:32, borderRadius:4, background:selected.color }} />
@@ -330,24 +342,24 @@ const Courses = () => {
                 </p>
                 {sortedTasks.map(t => (
                   <div key={t.id} className="task-item" onClick={() => setSelectedTaskId(t.id)}>
-                    <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-                      <div style={{ flex:1, minWidth:0 }}>
+                    <div className="course-task-row" style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+                      <div className="course-task-main" style={{ flex:1, minWidth:0 }}>
                         <p style={{ fontSize:'14px', color:'#e9d5ff', marginBottom:'4px',
                           overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap',
                           textDecoration: t.status === 'completed' ? 'line-through' : 'none',
                           opacity: t.status === 'completed' ? 0.5 : 1 }}>{t.title}</p>
-                        <div style={{ display:'flex', gap:'6px', alignItems:'center' }}>
+                        <div className="course-task-meta" style={{ display:'flex', gap:'6px', alignItems:'center' }}>
                           <Pill color={statusColor[t.status] || 'purple'}>{t.status}</Pill>
                           <span style={{ fontSize:'11px', color:'rgba(167,139,250,0.4)' }}>DL: {t.deadline_priority}</span>
                           <span style={{ fontSize:'11px', color:'rgba(167,139,250,0.4)' }}>My: {t.user_priority}</span>
                         </div>
                       </div>
                       {t.deadline && (
-                        <span style={{ fontSize:'12px', color:'rgba(167,139,250,0.4)', whiteSpace:'nowrap', flexShrink:0 }}>
+                        <span className="course-task-date" style={{ fontSize:'12px', color:'rgba(167,139,250,0.4)', whiteSpace:'nowrap', flexShrink:0 }}>
                           {formatDateInPakistan(t.deadline, { month: 'short', day: 'numeric' })}
                         </span>
                       )}
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(167,139,250,0.3)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                      <svg className="course-task-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(167,139,250,0.3)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
                     </div>
                   </div>
                 ))}

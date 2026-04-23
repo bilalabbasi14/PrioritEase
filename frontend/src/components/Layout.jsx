@@ -70,7 +70,7 @@ const NAV_ITEMS = [
 ]
 
 const Layout = ({ children }) => {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const location = useLocation()
   const [unreadCount, setUnreadCount] = useState(0)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
@@ -513,13 +513,6 @@ const Layout = ({ children }) => {
                 {user?.name?.charAt(0).toUpperCase() || 'U'}
               </div>
               <span className="user-name">{user?.name || 'User'}</span>
-              <button className="logout-btn" onClick={logout} title="Logout">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
-                  <polyline points="16 17 21 12 16 7" />
-                  <line x1="21" y1="12" x2="9" y2="12" />
-                </svg>
-              </button>
             </div>
           </div>
         </aside>

@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import axios from '../api/axios'
 import { getPakistanCalendarDayDiff, parsePakistanDatetime } from '../utils/time'
 import TaskDetailPanel from '../components/TaskDetailPanel'
@@ -80,8 +81,8 @@ const TaskModal = ({ onClose, onSave, courses }) => {
   const labelStyle = { fontSize:'12px', color:'rgba(167,139,250,0.5)', letterSpacing:'0.08em',
     textTransform:'uppercase', display:'block', marginBottom:'6px' }
 
-  return (
-    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.65)', zIndex:100,
+  return createPortal(
+    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.65)', zIndex:320,
       display:'flex', alignItems:'center', justifyContent:'center', backdropFilter:'blur(4px)' }}
       onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{ background:'#0f0a1e', border:'1px solid rgba(139,92,246,0.25)', borderRadius:'18px',
@@ -144,7 +145,8 @@ const TaskModal = ({ onClose, onSave, courses }) => {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
@@ -236,9 +238,18 @@ const Tasks = () => {
           borderRadius:10px; padding:9px 14px; color:#e9d5ff; font-family:'DM Sans',sans-serif;
           font-size:14px; outline:none; width:220px; border-radius:10px; }
         .search-input::placeholder { color:rgba(167,139,250,0.3); }
+        @media (max-width: 768px) {
+          .tasks-shell { width: 100%; max-width: 100%; overflow-x: hidden; }
+          .tasks-header-actions { width: 100%; flex-wrap: wrap; justify-content: stretch; }
+          .search-input { width: 100%; min-width: 0; flex: 1 1 180px; }
+          .task-row { flex-wrap: wrap; align-items: flex-start; }
+          .task-main { width: 100%; }
+          .task-badges { width: 100%; flex-wrap: wrap; }
+          .task-chevron { display: none; }
+        }
       `}</style>
 
-      <div style={{ fontFamily:'DM Sans,sans-serif', color:'#e9d5ff', display:'flex', gap:'24px', maxWidth:'1100px' }}>
+      <div className="tasks-shell" style={{ fontFamily:'DM Sans,sans-serif', color:'#e9d5ff', display:'flex', gap:'24px', maxWidth:'1100px', width:'100%', minWidth:0 }}>
 
         {/* ── Left: task list ── */}
         <div style={{ flex:1, minWidth:0, animation:'fadeUp 0.45s cubic-bezier(0.16,1,0.3,1) both' }}>
@@ -246,10 +257,10 @@ const Tasks = () => {
           {/* Header */}
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'20px', flexWrap:'wrap', gap:'12px' }}>
             <h1 style={{ fontFamily:'Poppins,sans-serif', fontSize:'22px', fontWeight:600, color:'#e9d5ff' }}>Tasks</h1>
-            <div style={{ display:'flex', gap:'10px', alignItems:'center' }}>
+            <div className="tasks-header-actions" style={{ display:'flex', gap:'10px', alignItems:'center' }}>
               <input className="search-input" placeholder="Search tasks…" value={search}
                 onChange={e => setSearch(e.target.value)} />
-              <button className="add-btn" onClick={() => setShowModal(true)}>
+              <button className="add-btn" onClick={() => { setSelectedId(null); setShowModal(true) }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 New Task
               </button>
@@ -343,7 +354,7 @@ const Tasks = () => {
                   <div style={{ width:8, height:8, borderRadius:'50%', background:t.color || '#6366f1', flexShrink:0 }} />
 
                   {/* Title + course */}
-                  <div style={{ flex:1, minWidth:0 }}>
+                  <div className="task-main" style={{ flex:1, minWidth:0 }}>
                     <p style={{ fontSize:'14px', color:'#e9d5ff', marginBottom:'3px',
                       overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap',
                       textDecoration: t.status==='completed' ? 'line-through' : 'none',
@@ -356,7 +367,7 @@ const Tasks = () => {
                   </div>
 
                   {/* Badges */}
-                  <div style={{ display:'flex', gap:'5px', alignItems:'center', flexShrink:0 }}>
+                  <div className="task-badges" style={{ display:'flex', gap:'5px', alignItems:'center', flexShrink:0, minWidth:0 }}>
                     <Badge label={t.status} colors={STATUS_COLOR[t.status] || STATUS_COLOR.pending} />
                     <Badge label={`DL:${t.deadline_priority}`} colors={PRIORITY_COLOR[t.deadline_priority]} />
                     <Badge label={`My:${t.user_priority}`} colors={PRIORITY_COLOR[t.user_priority]} />
@@ -368,7 +379,7 @@ const Tasks = () => {
                     )}
                   </div>
 
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(167,139,250,0.3)" strokeWidth="2" strokeLinecap="round">
+                  <svg className="task-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(167,139,250,0.3)" strokeWidth="2" strokeLinecap="round">
                     <polyline points="9 18 15 12 9 6"/>
                   </svg>
                 </div>
@@ -378,7 +389,7 @@ const Tasks = () => {
         </div>
 
         {/* ── Right: task detail slide-in ── */}
-        {selectedId && (
+        {selectedId && !showModal && (
           <TaskDetailPanel
             taskId={selectedId}
             courses={courses}

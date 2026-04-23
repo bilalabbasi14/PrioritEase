@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import axios from '../api/axios'
 import { formatDateInPakistan, parsePakistanDatetime } from '../utils/time'
 
@@ -145,7 +146,7 @@ const TaskDetailPanel = ({ taskId, courses = [], onClose, onUpdate }) => {
     marginBottom: '5px',
   }
 
-  return (
+  const panel = (
     <div style={{
       position: 'fixed',
       top: 20,
@@ -502,6 +503,8 @@ const TaskDetailPanel = ({ taskId, courses = [], onClose, onUpdate }) => {
       )}
     </div>
   )
+
+  return createPortal(panel, document.body)
 }
 
 export default TaskDetailPanel
