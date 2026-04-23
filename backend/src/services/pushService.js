@@ -24,6 +24,8 @@ const saveSubscription = async (userId, subscription) => {
        updated_at = NOW()`,
     [userId, endpoint, keys.p256dh, keys.auth]
   )
+
+  console.log(`[PUSH] Saved subscription for user ${userId}`)
 }
 
 /**
@@ -34,6 +36,8 @@ const deleteSubscription = async (userId, endpoint) => {
     'DELETE FROM push_subscriptions WHERE user_id = ? AND endpoint = ?',
     [userId, endpoint]
   )
+
+  console.log(`[PUSH] Removed subscription for user ${userId}`)
 }
 
 /**
@@ -48,7 +52,12 @@ const sendToUser = async (userId, payload) => {
     [userId]
   )
 
-  if (!subscriptions.length) return
+  if (!subscriptions.length) {
+    console.log(`[PUSH] No subscriptions for user ${userId}; skipping "${payload.title || 'notification'}"`)
+    return
+  }
+
+  console.log(`[PUSH] Sending "${payload.title || 'notification'}" to user ${userId} (${subscriptions.length} subscription(s))`)
 
   const notification = JSON.stringify({
     title: payload.title,
@@ -94,6 +103,8 @@ const sendToUser = async (userId, payload) => {
     )
     console.log(`[PUSH] Removed ${staleEndpoints.length} stale subscription(s)`)
   }
+
+  console.log(`[PUSH] Finished sending "${payload.title || 'notification'}" for user ${userId}`)
 }
 
 /**

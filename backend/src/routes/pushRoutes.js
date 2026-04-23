@@ -24,6 +24,7 @@ router.post('/subscribe', async (req, res) => {
 
   try {
     await saveSubscription(req.user.id, subscription)
+    console.log(`[PUSH] Subscribe request succeeded for user ${req.user.id}`)
     res.status(201).json({ message: 'Subscription saved' })
   } catch (err) {
     console.error('[PUSH] Subscribe error:', err.message)
@@ -46,6 +47,7 @@ router.delete('/subscribe', async (req, res) => {
 
   try {
     await deleteSubscription(req.user.id, endpoint)
+    console.log(`[PUSH] Unsubscribe request succeeded for user ${req.user.id}`)
     res.json({ message: 'Subscription removed' })
   } catch (err) {
     console.error('[PUSH] Unsubscribe error:', err.message)
@@ -60,6 +62,7 @@ router.delete('/subscribe', async (req, res) => {
  * pushManager.subscribe({ applicationServerKey: key, ... })
  */
 router.get('/vapid-public-key', (req, res) => {
+  console.log('[PUSH] VAPID public key requested')
   res.json({ publicKey: process.env.VAPID_PUBLIC_KEY })
 })
 
