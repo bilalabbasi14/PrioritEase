@@ -13,7 +13,15 @@ const analyticsRoutes = require('./routes/analyticsRoutes')
 
 const app = express()
 
-app.use(cors())
+const PORT = process.env.PORT || 5000
+
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://priorit-ease.vercel.app/',
+  ],
+  credentials: true,
+}))
 app.use(express.json())
 
 app.use('/api/auth', authRoutes)
