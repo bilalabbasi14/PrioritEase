@@ -8,6 +8,9 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME,
   timezone: '+05:00',
   dateStrings: true,
+  waitForConnections: true,
+  connectionLimit:    4,   // stay under Clever Cloud's limit of 5
+  queueLimit:         0,
 })
 
 pool.on('connection', (connection) => {
