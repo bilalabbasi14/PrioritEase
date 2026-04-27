@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 5000
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    'https://priorit-ease.vercel.app/',
+    'https://priorit-ease.vercel.app',
   ],
   credentials: true,
 }))
