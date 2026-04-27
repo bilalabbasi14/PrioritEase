@@ -28,7 +28,9 @@ app.get('/', (req, res) => {
   res.send('PrioritEase server is running')
 })
 
-app.listen(process.env.PORT, () => {
-  console.log(`Server running on port ${process.env.PORT}`)
-  startJobs()
-})
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
+}
+
+module.exports = app
+
