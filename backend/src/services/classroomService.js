@@ -205,6 +205,7 @@ const syncAssignments = async (userId) => {
     for (const work of courseWork) {
       // Parse Google's dueDate + dueTime into a MySQL DATETIME
       const deadline = classroomDueUtcToPakistanDatetime(work.dueDate, work.dueTime)
+      const classroomLink = work.alternateLink || work.htmlLink || null
 
       const status = mapSubmissionStatus(submissionStates[work.id])
 
@@ -215,15 +216,15 @@ const syncAssignments = async (userId) => {
 
       if (existing.length > 0) {
         await db.query(
-          'UPDATE tasks SET title = ?, deadline = ?, status = ? WHERE user_id = ? AND google_task_id = ?',
-          [work.title, deadline, status, userId, work.id]
+          'UPDATE tasks SET title = ?, deadline = ?, status = ?, classroom_link = ? WHERE user_id = ? AND google_task_id = ?',
+          [work.title, deadline, status, classroomLink, userId, work.id]
         )
         updated++
       } else {
         await db.query(
-          `INSERT INTO tasks (user_id, course_id, title, deadline, google_task_id, status, source)
-           VALUES (?, ?, ?, ?, ?, ?, 'google')`,
-          [userId, course.id, work.title, deadline, work.id, status]
+          `INSERT INTO tasks (user_id, course_id, title, deadline, google_task_id, status, source, classroom_link)
+           VALUES (?, ?, ?, ?, ?, ?, 'google', ?)`,
+          [userId, course.id, work.title, deadline, work.id, status, classroomLink]
         )
         created++
       }
