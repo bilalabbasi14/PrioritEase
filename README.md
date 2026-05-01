@@ -292,6 +292,7 @@ App will be available at `http://localhost:5173`.
 ### Notes
 - Vercel serverless functions do not support persistent cron jobs. Priority recalculation and overdue marking are triggered manually via the sync button in the app.
 - Clever Cloud free tier has a limit of 5 simultaneous MySQL connections. The pool is configured with `connectionLimit: 4` to stay within this limit.
+- On Vercel serverless, API requests spins up a separate function instance with its own connection pool. So 4 simultaneous requests = 4 pools trying to open connections = instantly hits the 5 connection limit even with just you as the only user. So App may not fetch data from database after a few API requests like /api/courses, /api/tasks, /api/analytics/summary ,/api/analytics/upcoming
 
 ---
 
